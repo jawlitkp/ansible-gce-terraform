@@ -1,0 +1,203 @@
+provider "google" {
+  credentials = "${file("{{gce_json_creds}}")}"
+  project     = "{{gce_project}}"
+  region      = "{{gce_region}}"
+}
+
+resource "google_compute_http_health_check" "sdsa_healthcheck" {
+  name = "{{gce_prefix}}-healthcheck"
+  request_path = "/"
+  check_interval_sec = 1
+  healthy_threshold = 1
+  unhealthy_threshold = 10
+  timeout_sec = 1
+}
+
+resource "google_compute_target_pool" "sdsa_targetpool" {
+  name = "{{gce_prefix}}-targetpool"
+}
+
+resource "google_compute_forwarding_rule" "sdsa_forwarding_rule" {
+  name = "{{gce_prefix}}-fwrule"
+  target = "${google_compute_target_pool.sdsa_targetpool.self_link}"
+  port_range = "80"
+}
+
+resource "google_compute_instance_group_manager" "sdsa_cmanager_foo" {
+  name = "{{gce_prefix}}-cmanager-foo"
+  instance_template = "${google_compute_instance_template.sdsa_template_foo.self_link}"
+  target_pools = ["${google_compute_target_pool.sdsa_targetpool.self_link}"]
+  base_instance_name = "{{gce_prefix}}-foo"
+  zone = "{{gce_zone}}"
+
+  named_port {
+    name = "http"
+    port = 80
+  }
+}
+
+resource "google_compute_instance_group_manager" "sdsa_cmanager_bar" {
+  name = "{{gce_prefix}}-cmanager-bar"
+  instance_template = "${google_compute_instance_template.sdsa_template_bar.self_link}"
+  target_pools = ["${google_compute_target_pool.sdsa_targetpool.self_link}"]
+  base_instance_name = "{{gce_prefix}}-bar"
+  zone = "{{gce_zone}}"
+
+  named_port {
+    name = "http"
+    port = 80
+  }
+}
+
+resource "google_compute_autoscaler" "sdsa_scaler_foo" {
+  name = "{{gce_prefix}}-scaler-foo"
+  zone = "{{gce_zone}}"
+  target = "${google_compute_instance_group_manager.sdsa_cmanager_foo.self_link}"
+  autoscaling_policy = {
+    max_replicas = 5
+    min_replicas = 1
+    cooldown_period = 60
+    cpu_utilization = {
+      target = 0.5
+    }
+  }
+}
+
+resource "google_compute_autoscaler" "sdsa_scaler_bar" {
+  name = "{{gce_prefix}}-scaler-bar"
+  zone = "{{gce_zone}}"
+  target = "${google_compute_instance_group_manager.sdsa_cmanager_bar.self_link}"
+  autoscaling_policy = {
+    max_replicas = 5
+    min_replicas = 1
+    cooldown_period = 60
+    cpu_utilization = {
+      target = 0.5
+    }
+  }
+}
+
+resource "google_compute_instance_template" "sdsa_template_foo" {
+  name = "{{gce_prefix}}-template-foo"
+  machine_type = "f1-micro"
+  can_ip_forward = false
+  tags = ["foo"]
+
+  disk {
+    source_image = "coreos-beta-991-2-0-v20160326"
+  }
+
+  network_interface {
+    network = "default"
+    access_config {
+      # Ephemeral
+    }
+  }
+
+  metadata {
+    ssh-keys = "root:${file("{{gce_public_key}}")}"
+    user-data = "${file("cloud-config-foo.yaml")}"
+  }
+
+  service_account {
+    scopes = ["https://www.googleapis.com/auth/compute.readonly"]
+  }
+}
+
+resource "google_compute_instance_template" "sdsa_template_bar" {
+  name = "{{gce_prefix}}-template-bar"
+  machine_type = "f1-micro"
+  can_ip_forward = false
+  tags = ["bar"]
+
+  disk {
+    source_image = "coreos-beta-991-2-0-v20160326"
+  }
+
+  network_interface {
+    network = "default"
+    access_config {
+      # Ephemeral
+    }
+  }
+
+  metadata {
+    ssh-keys = "root:${file("{{gce_public_key}}")}"
+    user-data = "${file("cloud-config-bar.yaml")}"
+  }
+
+  service_account {
+    scopes = ["https://www.googleapis.com/auth/compute.readonly"]
+  }
+}
+
+resource "google_compute_backend_service" "sdsa_service_foo" {
+  name = "{{gce_prefix}}-service-foo"
+  description = "To foo"
+  port_name = "http"
+  protocol = "HTTP"
+  timeout_sec = 10
+  region = "{{gce_region}}"
+
+  backend {
+    group = "${google_compute_instance_group_manager.sdsa_cmanager_foo.instance_group}"
+  }
+
+  health_checks = ["${google_compute_http_health_check.sdsa_healthcheck.self_link}"]
+}
+
+resource "google_compute_backend_service" "sdsa_service_bar" {
+  name = "{{gce_prefix}}-service-bar"
+  description = "To bar"
+  port_name = "http"
+  protocol = "HTTP"
+  timeout_sec = 10
+  region = "{{gce_region}}"
+
+  backend {
+    group = "${google_compute_instance_group_manager.sdsa_cmanager_bar.instance_group}"
+  }
+
+  health_checks = ["${google_compute_http_health_check.sdsa_healthcheck.self_link}"]
+}
+
+resource "google_compute_url_map" "sdsa_urlmap" {
+  name = "{{gce_prefix}}-urlmap"
+  description = "to foo or to bar?"
+  default_service = "${google_compute_backend_service.sdsa_service_foo.self_link}"
+
+  host_rule {
+    hosts = ["${google_compute_forwarding_rule.sdsa_forwarding_rule.ip_address}"]
+    path_matcher = "allpaths"
+  }
+
+  path_matcher {
+      default_service = "${google_compute_backend_service.sdsa_service_foo.self_link}"
+      name = "allpaths"
+      path_rule {
+        paths = ["/foo"]
+        service = "${google_compute_backend_service.sdsa_service_foo.self_link}"
+      }
+      path_rule {
+        paths = ["/bar"]
+        service = "${google_compute_backend_service.sdsa_service_bar.self_link}"
+      }
+  }
+}
+
+resource "google_compute_firewall" "sdsa_firewall" {
+  name = "{{gce_prefix}}-firewall"
+  network = "default"
+
+  allow {
+    protocol = "tcp"
+    ports = ["80"]
+  }
+
+  source_ranges = ["0.0.0.0/0"]
+  target_tags = ["foo", "bar"]
+}
+
+output "public_ip" {
+  value = "${google_compute_forwarding_rule.sdsa_forwarding_rule.ip_address}"
+}

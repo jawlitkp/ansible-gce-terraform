@@ -1,0 +1,3 @@
+---
+config_file: "{{ lookup('env','SDSA_CONFIG_FILE') }}"
+mode: plan

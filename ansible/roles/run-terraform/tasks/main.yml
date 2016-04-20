@@ -1,0 +1,5 @@
+---
+- name: Include configuration variables
+  include_vars: "{{config_file}}"
+- include: terraform-render.yaml
+- include: terraform-mode.yaml

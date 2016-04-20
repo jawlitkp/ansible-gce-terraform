@@ -1,0 +1,4 @@
+---
+- hosts: localhost
+  roles:
+    - { role: run-terraform, mode: "{{mode}}", config_file: "{{config_file}}" }
