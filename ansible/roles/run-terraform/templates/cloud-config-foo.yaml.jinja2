@@ -1,17 +1,14 @@
 #cloud-config
-
+---
+write_files:
+    - path: /home/core/www/foo/index.html
+      content: |
+        <h1>Foo $private_ipv4</h1>
+    - path: /home/core/www/index.html
+      content: |
+        <h1>Foo $private_ipv4</h1>
 coreos:
-  etcd2:
-    discovery: https://discovery.etcd.io/fa2fe78f0464e326fe83918463ef58f4
-    advertise-client-urls: http://$private_ipv4:2379,http://$private_ipv4:4001
-    initial-advertise-peer-urls: http://$private_ipv4:2380
-    listen-client-urls: http://0.0.0.0:2379,http://0.0.0.0:4001
-    listen-peer-urls: http://$private_ipv4:2380
   units:
-    - name: etcd2.service
-      command: start
-    - name: fleet.service
-      command: start
     - name: helloweb.service
       command: start
       content: |
@@ -25,11 +22,7 @@ coreos:
         Restart=always
         ExecStartPre=-/usr/bin/docker stop helloweb
         ExecStartPre=-/usr/bin/docker rm helloweb
-        ExecStartPre=-/usr/bin/docker rm hellodata
-        ExecStartPre=-/usr/bin/mkdir -p /home/core/www
-        ExecStartPre=/usr/bin/docker run -v /home/core/www --name hellodata busybox true
-        ExecStartPre=/usr/bin/ docker run --rm --volumes-from hellodata busybox /bin/sh -c 'echo "<h1>Foo $private_ipv4</h1>" > /www/index.html'
-        ExecStart=/usr/bin/docker run -p 80 --volumes-from hellodata --name helloweb fnichol/uhttpd
+        ExecStart=/usr/bin/docker run --net=host -v /home/core/www:/www --name helloweb fnichol/uhttpd
 
         [Install]
         WantedBy=multi-user.target
