@@ -6,5 +6,5 @@
 
 - name: Run terraform destroy
   shell: >
-    terraform {{mode}} -input=false -force -refresh=false {{playbook_dir}}/../terraform/ chdir={{playbook_dir}}/../terraform/
+    terraform {{mode}} -input=false -force {{playbook_dir}}/../terraform/ chdir={{playbook_dir}}/../terraform/
   when: mode in ['destroy']

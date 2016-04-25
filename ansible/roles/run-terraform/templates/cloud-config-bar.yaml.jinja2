@@ -1,12 +1,12 @@
 #cloud-config
 ---
 write_files:
-    - path: /home/core/www/bar/index.html
-      content: |
-        <h1>Bar $private_ipv4</h1>
-    - path: /home/core/www/index.html
-      content: |
-        <h1>Bar $private_ipv4</h1>
+  - path: /home/core/www/bar/index.html
+    content: |
+      <h1>Bar $private_ipv4</h1>
+  - path: /home/core/www/index.html
+    content: |
+      <h1>Bar $private_ipv4</h1>
 coreos:
   units:
     - name: helloweb.service
@@ -26,3 +26,6 @@ coreos:
 
         [Install]
         WantedBy=multi-user.target
+  update:
+    group: beta
+    reboot-strategy: off

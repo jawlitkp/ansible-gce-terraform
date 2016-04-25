@@ -7,9 +7,29 @@ provider "google" {
 provider "aws" {
 }
 
-resource "google_compute_http_health_check" "sdsa_healthcheck" {
-  name = "{{gce_prefix}}-healthcheck"
-  request_path = "/"
+resource "google_compute_network" "sdsa_network" {
+  name       = "{{gce_prefix}}-network"
+}
+
+resource "google_compute_subnetwork" "sdsa_subnetwork" {
+  name          = "{{gce_prefix}}-subnetwork"
+  ip_cidr_range = "10.1.0.0/16"
+  network       = "${google_compute_network.sdsa_network.self_link}"
+  region        = "{{gce_region}}"
+}
+
+resource "google_compute_http_health_check" "sdsa_healthcheck_foo" {
+  name = "{{gce_prefix}}-healthcheck-foo"
+  request_path = "/foo/"
+  check_interval_sec = 1
+  healthy_threshold = 1
+  unhealthy_threshold = 10
+  timeout_sec = 1
+}
+
+resource "google_compute_http_health_check" "sdsa_healthcheck_bar" {
+  name = "{{gce_prefix}}-healthcheck-bar"
+  request_path = "/bar/"
   check_interval_sec = 1
   healthy_threshold = 1
   unhealthy_threshold = 10
@@ -31,7 +51,7 @@ resource "google_compute_instance_group_manager" "sdsa_cmanager_foo" {
   name = "{{gce_prefix}}-cmanager-foo"
   instance_template = "${google_compute_instance_template.sdsa_template_foo.self_link}"
   base_instance_name = "{{gce_prefix}}-foo"
-  zone = "{{gce_zone}}"
+  zone = "{{gce_zone_foo}}"
 
   named_port {
     name = "http"
@@ -43,7 +63,7 @@ resource "google_compute_instance_group_manager" "sdsa_cmanager_bar" {
   name = "{{gce_prefix}}-cmanager-bar"
   instance_template = "${google_compute_instance_template.sdsa_template_bar.self_link}"
   base_instance_name = "{{gce_prefix}}-bar"
-  zone = "{{gce_zone}}"
+  zone = "{{gce_zone_bar}}"
 
   named_port {
     name = "http"
@@ -53,28 +73,28 @@ resource "google_compute_instance_group_manager" "sdsa_cmanager_bar" {
 
 resource "google_compute_autoscaler" "sdsa_scaler_foo" {
   name = "{{gce_prefix}}-scaler-foo"
-  zone = "{{gce_zone}}"
+  zone = "{{gce_zone_foo}}"
   target = "${google_compute_instance_group_manager.sdsa_cmanager_foo.self_link}"
   autoscaling_policy = {
     max_replicas = 5
-    min_replicas = 2
+    min_replicas = 1
     cooldown_period = 60
     cpu_utilization = {
-      target = 0.5
+      target = 0.3
     }
   }
 }
 
 resource "google_compute_autoscaler" "sdsa_scaler_bar" {
   name = "{{gce_prefix}}-scaler-bar"
-  zone = "{{gce_zone}}"
+  zone = "{{gce_zone_bar}}"
   target = "${google_compute_instance_group_manager.sdsa_cmanager_bar.self_link}"
   autoscaling_policy = {
     max_replicas = 5
-    min_replicas = 2
+    min_replicas = 1
     cooldown_period = 60
     cpu_utilization = {
-      target = 0.5
+      target = 0.3
     }
   }
 }
@@ -90,7 +110,7 @@ resource "google_compute_instance_template" "sdsa_template_foo" {
   }
 
   network_interface {
-    network = "default"
+    subnetwork = "${google_compute_subnetwork.sdsa_subnetwork.name}"
     access_config {
       # Ephemeral
     }
@@ -117,7 +137,7 @@ resource "google_compute_instance_template" "sdsa_template_bar" {
   }
 
   network_interface {
-    network = "default"
+    subnetwork = "${google_compute_subnetwork.sdsa_subnetwork.name}"
     access_config {
       # Ephemeral
     }
@@ -145,7 +165,7 @@ resource "google_compute_backend_service" "sdsa_service_foo" {
     group = "${google_compute_instance_group_manager.sdsa_cmanager_foo.instance_group}"
   }
 
-  health_checks = ["${google_compute_http_health_check.sdsa_healthcheck.self_link}"]
+  health_checks = ["${google_compute_http_health_check.sdsa_healthcheck_foo.self_link}"]
 }
 
 resource "google_compute_backend_service" "sdsa_service_bar" {
@@ -160,7 +180,7 @@ resource "google_compute_backend_service" "sdsa_service_bar" {
     group = "${google_compute_instance_group_manager.sdsa_cmanager_bar.instance_group}"
   }
 
-  health_checks = ["${google_compute_http_health_check.sdsa_healthcheck.self_link}"]
+  health_checks = ["${google_compute_http_health_check.sdsa_healthcheck_bar.self_link}"]
 }
 
 resource "google_compute_url_map" "sdsa_urlmap" {
@@ -169,13 +189,14 @@ resource "google_compute_url_map" "sdsa_urlmap" {
   default_service = "${google_compute_backend_service.sdsa_service_foo.self_link}"
 
   host_rule {
-    hosts = ["gcetest.{{gce_domain}}"]
+    hosts = ["{{gce_hostprefix}}.{{gce_domain}}"]
     path_matcher = "allpaths"
   }
 
   path_matcher {
       default_service = "${google_compute_backend_service.sdsa_service_foo.self_link}"
       name = "allpaths"
+      
       path_rule {
         paths = ["/foo/"]
         service = "${google_compute_backend_service.sdsa_service_foo.self_link}"
@@ -189,7 +210,7 @@ resource "google_compute_url_map" "sdsa_urlmap" {
 
 resource "google_compute_firewall" "sdsa_firewall" {
   name = "{{gce_prefix}}-firewall"
-  network = "default"
+  network = "${google_compute_network.sdsa_network.name}"
 
   allow {
     protocol = "tcp"
@@ -202,7 +223,7 @@ resource "google_compute_firewall" "sdsa_firewall" {
 
 resource "aws_route53_record" "sdsa_record" {
   zone_id = "{{gce_aws_az}}"
-  name    = "gcetest.{{gce_domain}}"
+  name    = "{{gce_hostprefix}}.{{gce_domain}}"
   type    = "A"
   ttl     = "30"
   records = ["${google_compute_global_forwarding_rule.sdsa_forwarding_rule.ip_address}"]
