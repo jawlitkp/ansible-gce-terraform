@@ -119,6 +119,7 @@ resource "google_compute_instance_template" "sdsa_template_foo" {
   metadata {
     ssh-keys = "root:${file("{{gce_public_key}}")}"
     user-data = "${file("cloud-config-foo.yaml")}"
+    hostname = "foobar"
   }
 
   service_account {
@@ -214,7 +215,7 @@ resource "google_compute_firewall" "sdsa_firewall" {
 
   allow {
     protocol = "tcp"
-    ports = ["80"]
+    ports = ["80", "22"]
   }
 
   source_ranges = ["0.0.0.0/0"]
