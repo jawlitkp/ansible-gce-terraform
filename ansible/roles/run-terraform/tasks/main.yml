@@ -1,5 +1,7 @@
 ---
 - name: Include configuration variables
   include_vars: "{{config_file}}"
+- include: pre-reqs.yaml
 - include: terraform-render.yaml
 - include: terraform-mode.yaml
+- include: setup-gce-inventory.yaml

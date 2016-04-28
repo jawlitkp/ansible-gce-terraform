@@ -1,2 +1,4 @@
 **/vars.yaml
 terraform
+ansible/inventory/gce.ini
+ansible/inventory/secrets.py

@@ -118,8 +118,7 @@ resource "google_compute_instance_template" "sdsa_template_foo" {
 
   metadata {
     ssh-keys = "root:${file("{{gce_public_key}}")}"
-    user-data = "${file("cloud-config-foo.yaml")}"
-    hostname = "foobar"
+    user-data = "${file("cloud-config.yaml")}"
   }
 
   service_account {

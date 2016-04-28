@@ -1,0 +1,10 @@
+- name: register path to secrets.py
+  set_fact: >
+    secrets_py_path="{{playbook_dir}}/inventory/secrets.py"
+
+- name: Generate gce.ini file
+  template: src=gce.ini.jinja2
+            dest="{{playbook_dir}}/inventory/gce.ini"
+- name: Generate secrets.py file
+  template: src=secrets.py.jinja2
+            dest="{{playbook_dir}}/inventory/secrets.py"

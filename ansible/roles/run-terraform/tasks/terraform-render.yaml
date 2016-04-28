@@ -6,9 +6,19 @@
 - name: Generate terraform file
   template: src=gce.tf.jinja2
             dest="{{playbook_dir}}/../terraform/gce.tf"
-- name: Generate cloud-config-foo.yaml file
-  template: src=cloud-config-foo.yaml.jinja2
-            dest="{{playbook_dir}}/../terraform/cloud-config-foo.yaml"
+
+- name: register bar cloud config
+  set_fact: >
+    tornado_type="bar"
+
 - name: Generate cloud-config-bar.yaml file
-  template: src=cloud-config-bar.yaml.jinja2
+  template: src=cloud-config.yaml.jinja2
             dest="{{playbook_dir}}/../terraform/cloud-config-bar.yaml"
+
+- name: register bar cloud config
+  set_fact: >
+    tornado_type="foo"
+
+- name: Generate cloud-config-foo.yaml file
+  template: src=cloud-config.yaml.jinja2
+            dest="{{playbook_dir}}/../terraform/cloud-config-foo.yaml"
