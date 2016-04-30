@@ -7,18 +7,18 @@
   template: src=gce.tf.jinja2
             dest="{{playbook_dir}}/../terraform/gce.tf"
 
-- name: register bar cloud config
+- name: register tornado cloud config
   set_fact: >
-    tornado_type="bar"
+    inventory_host="tornadohost"
 
-- name: Generate cloud-config-bar.yaml file
+- name: Generate cloud-config-tornado.yaml file
   template: src=cloud-config.yaml.jinja2
-            dest="{{playbook_dir}}/../terraform/cloud-config-bar.yaml"
+            dest="{{playbook_dir}}/../terraform/cloud-config-tornado.yaml"
 
-- name: register bar cloud config
+- name: register redis cloud config
   set_fact: >
-    tornado_type="foo"
+    inventory_host="redishost"
 
-- name: Generate cloud-config-foo.yaml file
+- name: Generate cloud-config-redis.yaml file
   template: src=cloud-config.yaml.jinja2
-            dest="{{playbook_dir}}/../terraform/cloud-config-foo.yaml"
+            dest="{{playbook_dir}}/../terraform/cloud-config-redis.yaml"

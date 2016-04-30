@@ -3,16 +3,18 @@
 write_files:
   - path: /etc/ansible/hosts
     content: |
-      [dockerhost]
-      dockerhost ansible_ssh_host=$private_ipv4
-  - path: /etc/ansible/group_vars/dockerhost
+      [{{inventory_host}}]
+      {{inventory_host}} ansible_ssh_host=$private_ipv4
+  - path: /etc/ansible/group_vars/{{inventory_host}}
     content: |
       ---
         ansible_connection: ssh
         ansible_python_interpreter: "PATH=/home/core/bin:$PATH python"
         ansible_ssh_private_key_file: /opt/ansible/keys/id_rsa
         ansible_ssh_user: core
-        type: {{tornado_type}}
+{% if inventory_host == "tornadohost" %}
+        redis_ip: ${redis_ip}
+{% endif %}
 coreos:
   units:
     - name: ansible-keys.service
@@ -27,7 +29,7 @@ coreos:
         RemainAfterExit=yes
         ExecStartPre=-/usr/bin/rm -rf /opt/ansible/keys
         ExecStartPre=-/usr/bin/mkdir -p /opt/ansible/keys
-        ExecStartPre=/usr/bin/bash -c "ssh-keygen -f /opt/ansible/keys/id_rsa -N ''"
+        ExecStart=/usr/bin/bash -c "ssh-keygen -f /opt/ansible/keys/id_rsa -N ''"
     - name: ansible-gitpull.service
       command: start
       content: |
@@ -39,7 +41,7 @@ coreos:
         Type=oneshot
         RemainAfterExit=yes
         ExecStartPre=-/usr/bin/rm -rf /opt/ansible/repo
-        ExecStart=/usr/bin/git clone -b {{repo_branch}} git@github.com:maratoid/ansible-gce-terraform.git /opt/ansible/repo
+        ExecStart=/usr/bin/git clone -b {{repo_branch}} https://github.com/maratoid/ansible-gce-terraform.git /opt/ansible/repo
     - name: boxible.service
       command: start
       content: |
@@ -52,7 +54,7 @@ coreos:
         Restart=on-failure
         RestartSec=5
         ExecStartPre=-/usr/bin/docker rm -f boxible
-        ExecStart=/usr/bin/docker run --name boxible -v /opt/ansible:/opt/ansible -v /var/run:/ansible quay.io/maratoid/boxible ansible-playbook -vv --ssh-common-args '-o StrictHostKeyChecking=no' /opt/ansible/repo/ansible/tornado.yaml
+        ExecStart=/usr/bin/docker run --name boxible -v /opt/ansible:/opt/ansible -v /var/run:/ansible quay.io/maratoid/boxible ansible-playbook -vv --ssh-common-args '-o StrictHostKeyChecking=no' /opt/ansible/repo/ansible/boxible.yaml
   update:
     group: beta
     reboot-strategy: off

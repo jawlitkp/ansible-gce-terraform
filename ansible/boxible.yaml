@@ -1,0 +1,7 @@
+---
+- hosts: tornadohost
+  roles:
+    - { role: tornado-chat }
+- hosts: redishost
+  roles:
+    - { role: redis }

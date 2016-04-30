@@ -1,0 +1,12 @@
+---
+- name: Create tornado-chat
+  template: src=tornado-chat.service.jinja2
+            dest=/etc/systemd/system/tornado-chat.service
+  become: yes
+  notify:
+    - reload systemd
+    - restart tornado-chat
+
+- name: Ensure tornado-chat.service started
+  service: name=tornado-chat state=started enabled=yes args=--no-block
+  become: yes

@@ -1,0 +1,14 @@
+[Unit]
+Description=Launch tornado chat server
+Requires=docker.service
+After=docker.service
+
+[Service]
+Restart=always
+RestartSec=5
+ExecStartPre=-/usr/bin/docker kill redis
+ExecStartPre=-/usr/bin/docker rm redis
+ExecStart=/usr/bin/docker run \
+  --name redis \
+  --net=host \
+  redis:alpine

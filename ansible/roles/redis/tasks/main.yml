@@ -1,0 +1,12 @@
+---
+- name: Create redis
+  template: src=redis.service.jinja2
+            dest=/etc/systemd/system/redis.service
+  become: yes
+  notify:
+    - reload systemd
+    - restart redis
+
+- name: Ensure redis.service started
+  service: name=redis state=started enabled=yes args=--no-block
+  become: yes

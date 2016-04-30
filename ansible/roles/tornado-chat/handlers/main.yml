@@ -1,0 +1,4 @@
+---
+- name: tornado-chat
+  service: name=tornado-chat state=restarted enabled=yes
+  become: yes
