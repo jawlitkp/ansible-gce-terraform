@@ -60,7 +60,7 @@ coreos:
           -v /var/run:/etc/ansible-control-path \
           -v /etc/ansible/hosts:/etc/ansible/hosts \
           -v /etc/ansible/group_vars/{{inventory_host}}:/etc/ansible/group_vars/{{inventory_host}} \
-          -e ANSIBLE_CONFIG=/opt/ansible/ansible.cfg \
+          -e ANSIBLE_CONFIG=/opt/ansible/repo/ansible/ansible.cfg \
           quay.io/maratoid/boxible \
           ansible-playbook -vv --ssh-common-args "-o StrictHostKeyChecking=no" /opt/ansible/repo/ansible/boxible.yaml
   update:
