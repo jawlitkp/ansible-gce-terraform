@@ -30,7 +30,7 @@ coreos:
         ExecStartPre=-/usr/bin/rm -rf /opt/ansible/keys
         ExecStartPre=-/usr/bin/mkdir -p /opt/ansible/keys
         ExecStartPre=/usr/bin/bash -c "ssh-keygen -f /opt/ansible/keys/id_rsa -N ''"
-        ExecStart=/usr/bin/bash -c "cat /home/core/.ssh/id_rsa.pub >> /home/core/.ssh/authorized_keys"
+        ExecStart=/usr/bin/bash -c "cat /opt/ansible/keys/id_rsa.pub >> /home/core/.ssh/authorized_keys"
     - name: ansible-gitpull.service
       command: start
       content: |
