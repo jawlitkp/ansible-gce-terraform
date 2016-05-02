@@ -29,7 +29,8 @@ coreos:
         RemainAfterExit=yes
         ExecStartPre=-/usr/bin/rm -rf /opt/ansible/keys
         ExecStartPre=-/usr/bin/mkdir -p /opt/ansible/keys
-        ExecStart=/usr/bin/bash -c "ssh-keygen -f /opt/ansible/keys/id_rsa -N ''"
+        ExecStartPre=/usr/bin/bash -c "ssh-keygen -f /opt/ansible/keys/id_rsa -N ''"
+        ExecStart=/usr/bin/bash -c "cat /home/core/.ssh/id_rsa.pub >> /home/core/.ssh/authorized_keys"
     - name: ansible-gitpull.service
       command: start
       content: |
@@ -60,7 +61,7 @@ coreos:
           -v /etc/ansible/hosts:/etc/ansible/hosts \
           -v /etc/ansible/group_vars/{{inventory_host}}:/etc/ansible/group_vars/{{inventory_host}} \
           quay.io/maratoid/boxible \
-          ansible-playbook -vv --ssh-common-args '-o StrictHostKeyChecking=no' /opt/ansible/repo/ansible/boxible.yaml
+          ansible-playbook -vv --ssh-common-args "-o StrictHostKeyChecking=no" /opt/ansible/repo/ansible/boxible.yaml
   update:
     group: beta
     reboot-strategy: off
