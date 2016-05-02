@@ -56,9 +56,10 @@ coreos:
         ExecStartPre=-/usr/bin/docker rm -f boxible
         ExecStart=/usr/bin/docker run --name boxible \
           -v /opt/ansible:/opt/ansible \
-          -v /var/run:/ansible quay.io/maratoid/boxible \
+          -v /var/run:/ansible \
           -v /etc/ansible/hosts:/etc/ansible/hosts \
           -v /etc/ansible/group_vars/{{inventory_host}}:/etc/ansible/group_vars/{{inventory_host}} \
+          quay.io/maratoid/boxible \
           ansible-playbook -vv --ssh-common-args '-o StrictHostKeyChecking=no' /opt/ansible/repo/ansible/boxible.yaml
   update:
     group: beta
