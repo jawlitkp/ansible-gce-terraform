@@ -107,7 +107,7 @@ resource "google_compute_instance" "sdsa_redis" {
 }
 
 resource "template_file" "sdsa_tornado_cloudconfig" {
-    template = "${file("${path.module}/cloud-config-tornado.yaml")}"
+    template = "${file("${path.module}/cloud-config-tornado.yaml.tpl")}"
 
     vars {
       redis_ip = "${google_compute_instance.sdsa_redis.network_interface.0.address}"

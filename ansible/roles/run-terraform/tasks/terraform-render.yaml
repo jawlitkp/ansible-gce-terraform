@@ -13,7 +13,7 @@
 
 - name: Generate cloud-config-tornado.yaml file
   template: src=cloud-config.yaml.jinja2
-            dest="{{playbook_dir}}/../terraform/cloud-config-tornado.yaml"
+            dest="{{playbook_dir}}/../terraform/cloud-config-tornado.yaml.tpl"
 
 - name: register redis cloud config
   set_fact: >
