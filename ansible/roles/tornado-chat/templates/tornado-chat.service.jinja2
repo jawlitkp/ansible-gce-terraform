@@ -11,5 +11,5 @@ ExecStartPre=-/usr/bin/docker rm tornadochat
 ExecStart=/usr/bin/docker run \
   --name tornadochat \
   --net=host \
-  -e "REDISTOGO_URL=redis://dummy:dummy@{{redis_ip}}:6379" \
+  -e "REDISTOGO_URL=redis://{{redis_login}}:{{redis_pw}}@{{redis_ip}}:6379" \
   quay.io/maratoid/tornadochat

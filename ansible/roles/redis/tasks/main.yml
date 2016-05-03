@@ -1,4 +1,17 @@
 ---
+- name: Create /opt/redis for configs
+  become: yes
+  file: >
+    path=/opt/redis
+    state=directory
+    owner=core
+    group=core
+
+- name: Create redis conf
+  template: src=redis.conf.jinja2
+            dest=/opt/redis/redis.conf
+  become: yes
+
 - name: Create redis
   template: src=redis.service.jinja2
             dest=/etc/systemd/system/redis.service

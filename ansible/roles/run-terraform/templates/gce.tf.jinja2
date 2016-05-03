@@ -179,6 +179,32 @@ resource "google_compute_firewall" "sdsa_firewall" {
   target_tags = ["tornadohost", "redishost"]
 }
 
+resource "google_compute_firewall" "sdsa_firewall" {
+  name = "{{gce_prefix}}-firewall"
+  network = "${google_compute_network.sdsa_network.name}"
+
+  allow {
+    protocol = "tcp"
+    ports = ["80", "22"]
+  }
+
+  source_ranges = ["0.0.0.0/0"]
+  target_tags = ["tornadohost", "redishost"]
+}
+
+resource "google_compute_firewall" "sdsa_firewall_internal" {
+  name = "{{gce_prefix}}-firewall-internal"
+  network = "${google_compute_network.sdsa_network.name}"
+
+  allow {
+    protocol = "tcp"
+    ports = ["6379"]
+  }
+
+  source_ranges = ["10.1.0.0/16"]
+  target_tags = ["redishost"]
+}
+
 resource "google_dns_managed_zone" "sdsa_zone" {
   name     = "{{gce_prefix}}-zone"
   dns_name = "{{gce_domain}}."
