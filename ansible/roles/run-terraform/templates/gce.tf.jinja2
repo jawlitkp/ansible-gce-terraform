@@ -192,11 +192,6 @@ resource "google_compute_firewall" "sdsa_firewall_internal" {
   target_tags = ["redishost"]
 }
 
-resource "google_dns_managed_zone" "sdsa_zone" {
-  name     = "{{gce_prefix}}-zone"
-  dns_name = "{{gce_domain}}."
-}
-
 {% for zone in gce_zones %}
 resource "google_dns_record_set" "sdsa_record_{{zone}}" {
   name = "{{loop.index}}.${google_dns_managed_zone.sdsa_zone.dns_name}"
