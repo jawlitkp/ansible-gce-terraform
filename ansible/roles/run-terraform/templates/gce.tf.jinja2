@@ -17,7 +17,7 @@ resource "google_compute_subnetwork" "sdsa_subnetwork" {
 
 resource "google_compute_http_health_check" "sdsa_healthcheck_tornado" {
   name = "{{gce_prefix}}-healthcheck-tornado"
-  request_path = "/"
+  request_path = "/login"
   check_interval_sec = 1
   healthy_threshold = 1
   unhealthy_threshold = 10
