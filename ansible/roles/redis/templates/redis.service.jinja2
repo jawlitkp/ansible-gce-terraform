@@ -11,5 +11,5 @@ ExecStartPre=-/usr/bin/docker rm redis
 ExecStart=/usr/bin/docker run \
   --name redis \
   --net=host \
-  -v /opt/redis:/opt/redis
+  -v /opt/redis:/opt/redis \
   redis:alpine redis-server /opt/redis/redis.conf

@@ -15,10 +15,8 @@ write_files:
 {% if inventory_host == "tornadohost" %}
         redis_ip: ${redis_ip}
 {% endif %}
-{% if inventory_host == "redishost" %}
         redis_pw: {{redis_pw}}
         redis_login: {{redis_login}}
-{% endif %}
 coreos:
   units:
     - name: ansible-keys.service

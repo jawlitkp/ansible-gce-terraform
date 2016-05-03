@@ -2,7 +2,7 @@
 - name: Wait for Redis
   wait_for: host={{redis_ip}}
             port=6379
-            delay=10
+            delay=5
             timeout=600
 
 - name: Create tornado-chat
