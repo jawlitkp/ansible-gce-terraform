@@ -53,11 +53,11 @@ resource "google_compute_autoscaler" "sdsa_scaler_tornado_{{zone}}" {
   zone = "{{zone}}"
   target = "${google_compute_instance_group_manager.sdsa_cmanager_tornado_{{zone}}.self_link}"
   autoscaling_policy = {
-    max_replicas = 5
-    min_replicas = 2
+    max_replicas = 3
+    min_replicas = 1
     cooldown_period = 60
     cpu_utilization = {
-      target = 0.3
+      target = 0.7
     }
   }
 }
@@ -116,7 +116,7 @@ resource "template_file" "sdsa_tornado_cloudconfig" {
 
 resource "google_compute_instance_template" "sdsa_template_tornado" {
   name = "{{gce_prefix}}-template-tornado"
-  machine_type = "f1-micro"
+  machine_type = "n1-standard-1"
   can_ip_forward = false
   tags = ["tornadohost"]
 
