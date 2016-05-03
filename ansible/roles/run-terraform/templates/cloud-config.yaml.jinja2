@@ -57,7 +57,6 @@ coreos:
         ExecStartPre=-/usr/bin/docker rm -f boxible
         ExecStart=/usr/bin/docker run --name boxible \
           -v /opt/ansible:/opt/ansible \
-          -v /var/run:/etc/ansible-control-path \
           -v /etc/ansible/hosts:/etc/ansible/hosts \
           -v /etc/ansible/group_vars/{{inventory_host}}:/etc/ansible/group_vars/{{inventory_host}} \
           -e ANSIBLE_CONFIG=/opt/ansible/repo/ansible/ansible.cfg \

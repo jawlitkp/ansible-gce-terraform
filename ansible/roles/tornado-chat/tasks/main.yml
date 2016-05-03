@@ -1,4 +1,10 @@
 ---
+- name: Wait for Redis
+  wait_for: host={{redis_ip}}
+            port=6379
+            delay=10
+            timeout=600
+
 - name: Create tornado-chat
   template: src=tornado-chat.service.jinja2
             dest=/etc/systemd/system/tornado-chat.service
