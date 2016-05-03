@@ -166,21 +166,8 @@ resource "google_compute_url_map" "sdsa_urlmap" {
   {% endfor %}
 }
 
-resource "google_compute_firewall" "sdsa_firewall" {
-  name = "{{gce_prefix}}-firewall"
-  network = "${google_compute_network.sdsa_network.name}"
-
-  allow {
-    protocol = "tcp"
-    ports = ["80", "22"]
-  }
-
-  source_ranges = ["0.0.0.0/0"]
-  target_tags = ["tornadohost", "redishost"]
-}
-
-resource "google_compute_firewall" "sdsa_firewall" {
-  name = "{{gce_prefix}}-firewall"
+resource "google_compute_firewall" "sdsa_firewall_external" {
+  name = "{{gce_prefix}}-firewall-external"
   network = "${google_compute_network.sdsa_network.name}"
 
   allow {
