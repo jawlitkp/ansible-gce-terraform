@@ -59,6 +59,7 @@ Then, you will end up with redirects:
 * 1.derp.io - redirects to instances in us-central1-c
 * 2.derp.io - redirects to instances in us-central1-b
 * 3.derp.io - redirects to instances in us-central1-a
+
 ### Provisioning
 Terraform provides a very short cloud-init file to all instances, that contains a minimal ansible inventory and variable files.
 Same cloud-init also starts a service, that downloads ansible packaged up into a small alpine-linux based container, and provisions the instance.
