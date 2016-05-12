@@ -1,4 +1,9 @@
 ---
+- name: Taint the google_compute_instance.storage resource
+  shell: >
+    terraform taint -allow-missing -state={{playbook_dir}}/../terraform/terraform.tfstate google_compute_instance.storage chdir={{playbook_dir}}/../terraform/
+  ignore_errors: yes
+
 - name: Run terraform {{mode}}
   shell: >
     terraform {{mode}} -input=false {{playbook_dir}}/../terraform/ chdir={{playbook_dir}}/../terraform/

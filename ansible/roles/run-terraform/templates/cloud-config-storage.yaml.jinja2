@@ -1,0 +1,59 @@
+#cloud-config
+---
+coreos:
+  units:
+    - name: format-ssd.service
+      command: start
+      content: |
+        [Unit]
+        Description=Formats the ssd drive
+        After=dev-xvdb.device
+        Requires=dev-xvdb.device
+        [Service]
+        Type=oneshot
+        RemainAfterExit=yes
+        ExecStart=/usr/sbin/wipefs -f /dev/xvdb
+        ExecStart=/usr/sbin/mkfs.ext4 -F /dev/xvdb
+    - name: storage.mount
+      command: start
+      content: |
+        [Unit]
+        Description=Mount ssd to /media/storage
+        Requires=format-ssd.service
+        After=format-ssd.service
+        [Mount]
+        What=/dev/xvdb
+        Where=/media/storage
+        Type=ext4
+    - name: storage.mount
+      command: start
+      content: |
+        [Unit]
+        Description=Mount ssd to /media/storage
+        Requires=format-ssd.service
+        After=format-ssd.service
+        [Mount]
+        What=/dev/xvdb
+        Where=/media/storage
+        Type=ext4
+    - name: helloweb.service
+      command: start
+      content: |
+        [Unit]
+        Description=Teeny weeny web server
+        After=docker.service storage.mount
+        Requires=docker.service storage.mount
+
+        [Service]
+        TimeoutStartSec=0
+        Restart=always
+        ExecStartPre=-/usr/bin/bash -c '/usr/bin/echo <h1>$(date)</h1> >> /media/storage/index.html'
+        ExecStartPre=-/usr/bin/docker stop helloweb
+        ExecStartPre=-/usr/bin/docker rm helloweb
+        ExecStart=/usr/bin/docker run --net=host -v /media/storage:/www --name helloweb fnichol/uhttpd
+
+        [Install]
+        WantedBy=multi-user.target
+  update:
+    group: beta
+    reboot-strategy: off
