@@ -1,14 +1,4 @@
 ---
-- name: Taint the google_compute_instance.storage resource
-  shell: >
-    terraform taint -state={{playbook_dir}}/../terraform/terraform.tfstate google_compute_instance.storage chdir={{playbook_dir}}/../terraform/
-  register: taint_result
-  ignore_errors: yes
-
-- name: Register a no_format flag for cloud init
-  set_fact: no_format=yes
-  when: taint_result.rc == 0
-
 - name: Run terraform {{mode}}
   shell: >
     terraform {{mode}} -input=false {{playbook_dir}}/../terraform/ chdir={{playbook_dir}}/../terraform/

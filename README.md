@@ -26,6 +26,19 @@ No parameters:
 ```
 ./run.sh
 ```
+
+Run it again to test out the destruction of compute instance, without destroying the attached volume.
+
+## Run ./down.sh
+
+No parameters:
+
+```
+./down.sh
+```
+
+to destroy.
+
 ## Summary
 Repo code uses a tiny bash script to fire up an ansible playbook, that renders a terraform infrastructure file. Values the terraform file is templated with come form a user-created vars.yaml.
 ### Terraform
@@ -46,3 +59,5 @@ Running
 ```
 
 more than once destroys/recreates the compute instance but not the disk - multiple runs should get you a page with multiple dates
+
+Terraform times out sometimes on destruction/creation. Just run the appropriate script again.

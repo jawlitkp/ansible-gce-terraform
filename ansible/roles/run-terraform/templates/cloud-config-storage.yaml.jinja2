@@ -2,7 +2,7 @@
 ---
 coreos:
   units:
-{% if inventory_host == "tornadohost" %}
+{% if do_not_format != true %}
     - name: format-ssd.service
       command: start
       content: |
@@ -15,13 +15,19 @@ coreos:
         RemainAfterExit=yes
         ExecStart=/usr/sbin/wipefs -f /dev/sdb
         ExecStart=/usr/sbin/mkfs.ext4 -F /dev/sdb
+{% endif %}
     - name: media-storage.mount
       command: start
       content: |
         [Unit]
         Description=Mount ssd to /media/storage
+{% if do_not_format != true %}
         Requires=format-ssd.service
         After=format-ssd.service
+{% else %}
+        After=dev-sdb.device
+        Requires=dev-sdb.device
+{% endif %}
         [Mount]
         What=/dev/sdb
         Where=/media/storage
