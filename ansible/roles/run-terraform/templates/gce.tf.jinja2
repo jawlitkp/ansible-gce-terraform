@@ -24,7 +24,7 @@ resource "google_compute_disk" "persistent" {
 
 resource "google_compute_instance" "storage" {
   name         = "{{gce_prefix}}-storage"
-  machine_type = "n1-standard-1"
+  machine_type = "f1-micro"
   zone         = "{{gce_zone}}"
   tags = ["storage"]
   disk {
@@ -32,7 +32,8 @@ resource "google_compute_instance" "storage" {
   }
   disk {
     disk = "${google_compute_disk.persistent.name}"
-    device_name = "xvdb"
+    device_name = "sdb"
+    auto_delete = false
   }
 
   network_interface {

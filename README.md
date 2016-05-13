@@ -7,12 +7,11 @@ With contents like:
 ---
 gce_project: GCE PROJECT NAME
 gce_region: GCE REGION
-gce_zone_foo: AZ FOR FOO INSTANCES
-gce_zone_bar: AZ FOR BAR INSTANCES
+gce_zone: AZ to use
 gce_json_creds: LOCATION OF GCE JSON CREDENTIALS FILE
 gce_prefix: UNIQUE GCE NAMING PREFIX
 gce_public_key: PUB KEY FOR GCE INSTANCES
-gce_aws_az: AWS ROUTE53 ZONE ID
+gce_dns_zone: CLOUD DNS ZONE ID
 gce_domain: DOMAIN FOR GCE HOST
 gce_hostprefix: PREFIX FOR GCE DOMAIN (i.e forwarding rule will point to gce_hostprefix.gce_domain)
 ```
@@ -35,13 +34,15 @@ No terraform templating is used, all values are pre-set by Ansible's jinja templ
 Terraform creates the following in GCE:
 A network
 A sub-network
-Two healhchecks (foo, bar)
-A forwarding rule and a proxy. Forwarding rul redirects to a GCE urlmap
-A URLMap
-Two instance group managers (foo, bar) in two different AZs with two attached autoscalers and the required instance templates
-Two backend services, one for each group manager
-The URL map forwards all http request with /foo/ path to Foo instance manager
-The URL map forwards all /bar/ requests to Bar instance manager
-All other requests are sent to Foo manager
-All instances in foo or bar managers respond with either "foo" or "bar" + their private ip.
-Autoscaling on load was verified by setting up a 10 node kubernetes cluster, and the generating load on GCE with with it, using [locust load generator](https://github.com/maratoid/kraken-services/tree/custom_load/loadtest-gce)
+A persistent 50 GB disk
+A compute instance
+A dns record
+
+Once everything created a small static page webserver is started serving a page with time of creation @ gce_hostprefix.gce_domain. Page is stored on the persistent disk and is populated by simply appending $(date) to index.html.
+Running
+
+```
+./run.sh
+```
+
+more than once destroys/recreates the compute instance but not the disk - multiple runs should get you a page with multiple dates
